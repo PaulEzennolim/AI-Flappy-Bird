@@ -3,6 +3,7 @@ import pygame
 import neat
 import os
 import random # random is for randomly placing the height of the tubes
+pygame.font.init()
 
 # Setting dimensions of the screen
 WIN_WIDTH = 500
@@ -19,7 +20,8 @@ BIRD_IMGS = [
 ]
 PIPE_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("Images", "imgs", "pipe.png")))  
 BASE_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("Images", "imgs", "base.png")))  
-BG_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("Images", "imgs", "bg.png")))  
+BG_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("Images", "imgs", "bg.png")))
+STAT_FONT = pygame.font.SysFont("bold", 50) # Fonts for drawing the score
 
 # Bird class will represent the bird objects moving
 class Bird: 
@@ -190,7 +192,7 @@ class Pipe:
         """
         self.top = 0
         self.bottom = 0 
-        self.PIPE_TOP = pygame.transfrom.flip(PIPE_IMG, False, True)
+        self.PIPE_TOP = pygame.transform.flip(PIPE_IMG, False, True)
         self.PIPE_BOTTOM = PIPE_IMG
 
         self.passed = False # self.passed stands for if the bird is already passed by this pipe
@@ -212,7 +214,7 @@ class Pipe:
         drawn at a negative location, but since it is so long, the pipe will go down the screen and where we want the 
         bottom of the top pipe to be will be in the correct position.
         """   
-        self.top = self.height - self.PiPE_TOP.get_height()
+        self.top = self.height - self.PIPE_TOP.get_height()
         self.bottom = self.height + self.GAP
 
     """
@@ -293,9 +295,22 @@ class Base:
         win.blit(self.IMG, (self.x2, self.y))
 
 # drw_window draws the window for the game
-def draw_window(win, bird):
+def draw_window(win, bird, pipes, base, score):
     # win.blit draws whatever is in the paranthesis on the window
     win.blit(BG_IMG, (0,0)) # (0,0) is the topleft positon of the image where its being drawn
+    for pipe in pipes: # draws the pipes
+        pipe.draw(win)
+
+        """
+        text is going to render the font that tells the user the score when playing.
+        """
+        text = STAT_FONT.render("Score: " + str(score), 1, (128, 0, 128))
+        """
+        Draws the score on the screen. No matter how large the score gets, WIN_WIDTH - 10 - text.get_width(), moves
+        the score to the left to accomodate the space on the screen.
+        """
+        win.blit(text, (WIN_WIDTH - 10 - text.get_width(), 10)) 
+        base.draw(win) # draws the base 
     """
     When doing bird.draw(win), the draw method is called and it'll handle all the animations, tilting and draw the bird.
     """
@@ -304,12 +319,15 @@ def draw_window(win, bird):
 
 # main runs the loop of the game
 def main():
-    bird = Bird(200, 200) # Starting position of the bird
+    bird = Bird(230, 350) # Starting position of the bird
+    base = Base(730) # Height of 730 is going to be at the very bottom of the screen
+    pipes = [Pipe(600)]
     win = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT)) # Creates a pygame window
     """
     clock will set the tick rate/frame rate (how fast the while loop is running) to be at a consistent rate. 
     """
     clock = pygame.time.Clock()
+    score = 0
 
     run = True
     while run:
@@ -322,8 +340,50 @@ def main():
             if event.type == pygame.QUIT:
                 run = False
 
-        # bird.move() # bird.move is called every frame. Everytime the while loop ticks, the bird is going to move   
-        draw_window(win, bird)
+        # bird.move() # bird.move is called every frame. Everytime the while loop ticks, the bird is going to move
+        add_pipe = False
+        """
+        Check the x position of the pipe. Once the pipe reaches a certain point a new pipe has to be created, then
+        another and so on.
+        """
+        rem = []
+        for pipe in pipes: # This for loop will allow pipes to move
+            if pipe.collide(bird): # This if statement checks for collisions with the pipe
+                pass
+
+            """
+            This if statement checks the position of the pipe. If the pipe is completely off the screen. If the x 
+            position of the pipe, as well as the width of it is less than 0, the pipe is off the screen. Once off the 
+            screen, pipe is removed and added to the list rem[] (remove).
+            """
+            if pipe.x + pipe.PIPE_TOP.get_width() < 0: 
+                rem.append(pipe)
+            
+            """
+            This if statement checks if the bird has passed the pipe. As soon as the bird passes a pipe, a new pipe is 
+            generated.
+            """
+            if not pipe.passed and pipe.x < bird.x:
+                pipe.passed = True 
+                add_pipe = True
+            pipe.move()
+
+        if add_pipe:
+            score += 1 # Once the bird passes a pipe, the score increases
+            """
+            pipes.append(Pipe()) creates a new pipe and adds it to the screen. To make the pipes spawn closer to 
+            eachother, simply reduce the position.
+            """
+            pipes.append(Pipe(600))
+        
+        for r in rem: # This for loop will get remove the pipes that went off the screen, the pipes in rem[]
+            pipes.remove(r)
+        
+        if bird.y + bird.img.get_height() > 730: # This if statment checks if the bird has hit the ground
+            pass
+
+        base.move() #base,move() will make the base move
+        draw_window(win, bird, pipes, base, score)
     
     pygame.quit()
     quit()
