@@ -1,4 +1,7 @@
 # Import all the necessary modules
+import neat.config
+import neat.nn.feed_forward
+import neat.population
 import pygame
 import neat
 import os
@@ -318,8 +321,34 @@ def draw_window(win, bird, pipes, base, score):
     pygame.display.update()# updates the displays
 
 # main runs the loop of the game
-def main():
-    bird = Bird(230, 350) # Starting position of the bird
+def main(genomes, config): # When creating a fitness function for neat, you must have genomes and config as parameters
+    """
+    nets keeps track of the neural network that controls each bird. The genomes that come in are a bunch of neural 
+    networks that control each of the birds. nets keep track of the bird that neural network is controlling, so where 
+    that position is in the screen.
+    """
+    nets = []
+    """
+    ge keeps track of the genomes in a list, so that the user can change the birds fitness based on how far they move 
+    or if they hit a pipe. The reason for three lists is so that each position in these lists will correspond to the 
+    same bird. So position 0 will have the neural network for bird 0, the genome for bird 0 and the bird object created 
+    for that bird to keep track of where it is.
+    """
+    ge = []
+    birds = []
+
+    for g in genomes: # This for loop setsup a neural network and a bird object for the genome
+        net = neat.nn.FeedForwardNetwork(g, config) # net sets up a neural network for the genome
+        nets.append(net)
+        birds.append(Bird(230,350))
+        g.fitness = 0 # The initial fitness of the bird is 0
+        """
+        Appends the genome into the ge list in the same position of the bird object and the neural network, so the user 
+        can keep track of birds fitness and and change its fitness as they desire.
+        """
+        ge.append(g)
+
+
     base = Base(730) # Height of 730 is going to be at the very bottom of the screen
     pipes = [Pipe(600)]
     win = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT)) # Creates a pygame window
@@ -348,28 +377,50 @@ def main():
         """
         rem = []
         for pipe in pipes: # This for loop will allow pipes to move
-            if pipe.collide(bird): # This if statement checks for collisions with the pipe
-                pass
-
-            """
-            This if statement checks the position of the pipe. If the pipe is completely off the screen. If the x 
-            position of the pipe, as well as the width of it is less than 0, the pipe is off the screen. Once off the 
-            screen, pipe is removed and added to the list rem[] (remove).
-            """
+            for x, in enumerate(birds): # This for loop checks if every pipe collides with every bird.
+                if pipe.collide(bird): # This if statement checks for collisions with the pipe
+                    """
+                    Everytime a bird hits a pipe, its fitness score will decrease by 1. This so there is no favour 
+                    towards birds that make far but collide with a pipe everytime. This deduction makes sure if a bird 
+                    hits a pipe and another bird is at the same level, but didn't hit the pipe, the bird that didn't 
+                    hit the pipe will have a higher fitness score, therefore encouraging the bird to go inbetween the 
+                    pipe.   
+                    """
+                    ge[x].fitness -= 1
+                    birds.pop(x) # Removes the bird object, so it's no longer moving through out the screen
+                    nets.pop(x) # Removes the neural network associated with the bird
+                    ge.pop(x)
+                """
+                This if statement checks if the bird has passed the pipe. As soon as the bird passes a pipe, a new pipe
+                is generated.
+                """
+                if not pipe.passed and pipe.x < bird.x:
+                    pipe.passed = True 
+                    add_pipe = True
+                    
+                    """
+                    This if statement checks the position of the pipe. If the pipe is completely off the screen. If the 
+                    x position of the pipe, as well as the width of it is less than 0, the pipe is off the screen. Once 
+                    off the screen, pipe is removed and added to the list rem[] (remove).
+                    """
             if pipe.x + pipe.PIPE_TOP.get_width() < 0: 
                 rem.append(pipe)
-            
-            """
-            This if statement checks if the bird has passed the pipe. As soon as the bird passes a pipe, a new pipe is 
-            generated.
-            """
-            if not pipe.passed and pipe.x < bird.x:
-                pipe.passed = True 
-                add_pipe = True
+                
             pipe.move()
 
         if add_pipe:
             score += 1 # Once the bird passes a pipe, the score increases
+            """
+            If a bird gets through a pipe, their fitness level is increased by 5. This will encourage the birds to go 
+            through the pipe, rather than just making it further in the level, but colliding with the pipes. This 
+            increase of the fitness level is possible without having to loop through the birds because, if the user 
+            has to remove a bird, they are removing it's genome as well from that list. Therefore any genome that's 
+            still in this list (this for loop) is alive and if it made it through the pipe then it'll gain 5 to its 
+            fitness score.
+            """
+            for g in ge:
+                g.fitness += 5
+
             """
             pipes.append(Pipe()) creates a new pipe and adds it to the screen. To make the pipes spawn closer to 
             eachother, simply reduce the position.
@@ -379,8 +430,15 @@ def main():
         for r in rem: # This for loop will get remove the pipes that went off the screen, the pipes in rem[]
             pipes.remove(r)
         
-        if bird.y + bird.img.get_height() > 730: # This if statment checks if the bird has hit the ground
-            pass
+        """
+        This for loop handles the case when a bird hits the ground. When a bird hits the ground, that bird is removed 
+        from the list.
+        """
+        for bird in enumerate(birds): # This for loop will check if each bird hits the ground
+            if bird.y + bird.img.get_height() > 730: # This if statment checks if the bird has hit the ground
+                birds.pop(x)
+                nets.pop(x)
+                ge.pop(x)
 
         base.move() #base,move() will make the base move
         draw_window(win, bird, pipes, base, score)
@@ -389,3 +447,31 @@ def main():
     quit()
 
 main()
+
+def run(config_path):
+    # config is defining all sub headings from the config_feedforward.txt and reads it in from config_path
+    config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet,
+                                neat.DefaultStagnation, config_path)
+    
+    p = neat.population(config) # p generates a populatino based on what is in the config file 
+
+    """
+    Stats reporters to neat to give the user outputs whenever they are running the algorithm, rather than not seeing 
+    anything happen in the console, there will be detailed statistics about each generation.
+    """
+    p.add_reporter(neat.StdOutReporter(True))
+    stats = neat.StatisticsReporter()
+    p.add_reporter(stats)
+
+    """
+    The birds fitness is determined by how far it moves in the game. So the main function is going ot be the fitness 
+    function for the neat algorithm. The main function will be called 50 times and pass it all of the genomes, aswell 
+    as the config file everytime. 
+    """
+    winner = p.run(main,50) # 50 refers to how many generations the user is going to run
+
+
+if __name__ == "__main__":
+    local_dir = os.path.dirname(__file__) # Path to the configuration path
+    config_path = os.path.join(local_dir, "config_feedforward.txt") # Finds the absolute path to the config file
+    run(config_path)
