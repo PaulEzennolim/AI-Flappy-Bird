@@ -1,45 +1,13 @@
-
 [NEAT]
-"""
-fitness_criterion is a function we can either choose from min, max or mean and this function determines the best birds.
-Taking the birds that are max, means they are the best birds, so will be the ones we breed and the birds with the lowest
-fitness will be removed. 
-"""
-fitness_criterion     = max 
-"""
-fitness_threshold is the fitness level we want before termination of the program. If there is a bird with a fitness 
-level of 100, this bird will likely go on forever and no more generations are needed after that. Whenever there is a 
-bird with a fitness level greater than or euqal to the fitness_threshold, the program will stop.
-"""
+fitness_criterion     = max
 fitness_threshold     = 100
-pop_size              = 100
-"""
-NEAT seperates the different architectures of all of the birds populations into species. For example, birds that have 
-2 or 3 hidden layers or strange nodes, will be one species. And birds that have the standard 3 nodes and one output 
-neuron will be its on species. So reset_on_extinction   = False is saying if there is a species that goes extinct, a 
-new population will not be created.
-"""
+pop_size              = 50
 reset_on_extinction   = False
 
-"""
-In NEAT all population members (birds), Genomes. Genomes have properties such as, nodes and genes. Nodes are the input 
-nodes and the output nodes. Genes are the connections between those nodes. DefaultGenome is setting up the 
-starting Genome. So each bird in the population will start with these specific values of activation_default, 
-activation_mutate_rate and activation_options.
-"""
 [DefaultGenome]
 # node activation options
 activation_default      = tanh
-"""
-activation_default rate means if you wanted to change the activation function to be something else randomly, the number 
-can be changed. For example, for 0.1, theres a 10% chance that whenever a new population member is created, they will 
-get a different random activation function.
-"""
 activation_mutate_rate  = 0.0
-"""
-activation_options are the options we can choose from as the activation functions. In other words what the 
-activation_mutate_rate will pick from.
-"""
 activation_options      = tanh
 
 # node aggregation options
@@ -47,20 +15,11 @@ aggregation_default     = sum
 aggregation_mutate_rate = 0.0
 aggregation_options     = sum
 
-# node bias options. The initial connections we have and how likely they are to change
+# node bias options
 bias_init_mean          = 0.0
 bias_init_stdev         = 1.0
-"""
-bias_max_value and bias_min_value means for that bias that we have, what is the maximum and minimum value that we can 
-pick, because we are going to randomly setup the first neural networks, so they have random biases and random weights.
-So bias_max_value and bias_min_value defines the biases between 30.0 and -30.0
-"""
 bias_max_value          = 30.0
 bias_min_value          = -30.0
-"""
-bias_mutate_power and bias_mutate_rate is how likely these biases are to change when we mutate and breed and create a 
-new population or birds.
-"""
 bias_mutate_power       = 0.5
 bias_mutate_rate        = 0.7
 bias_replace_rate       = 0.1
@@ -69,27 +28,22 @@ bias_replace_rate       = 0.1
 compatibility_disjoint_coefficient = 1.0
 compatibility_weight_coefficient   = 0.5
 
-# connection add/remove rates. How likely a new connection is to be added or removed
+# connection add/remove rates
 conn_add_prob           = 0.5
 conn_delete_prob        = 0.5
 
 # connection enable options
-"""
-enabled_default means there can be connections that are sometimes enabled or not enabled. In neural networks, these 
-connections have another parameter, where they are either active or not active. By default all connctions are going to 
-be active.
-"""
 enabled_default         = True
-enabled_mutate_rate     = 0.01 # There is a 1% chance of deactivating a connection
+enabled_mutate_rate     = 0.01
 
 feed_forward            = True
-initial_connection      = full # There is going to be fully connected layers to start
+initial_connection      = full
 
 # node add/remove rates
-node_add_prob           = 0.2 # 20% chance of adding a new node
-node_delete_prob        = 0.2 # 20% chance of deleting a new node
+node_add_prob           = 0.2
+node_delete_prob        = 0.2
 
-# network parameters. Setting the default input neurons. The amount of input, output and hidden neurons
+# network parameters
 num_hidden              = 0
 num_inputs              = 3
 num_outputs             = 1
@@ -116,12 +70,7 @@ weight_replace_rate     = 0.1
 compatibility_threshold = 3.0
 
 [DefaultStagnation]
-species_fitness_func = max # Taking the max fitness from bird species
-"""
-max_stagnation is how many generations we go without increasing fitness. If a point is reached where there are 20 
-generations that go by and the max fitness for the group of birds does not increase, then that species will get 
-eliminated.
-"""
+species_fitness_func = max
 max_stagnation       = 20
 species_elitism      = 2
 
