@@ -1,3 +1,6 @@
+This is flappy bird game encoded with an AI, that uses this AI to learn how to play the game well!!!
+
+Extra information about the config_feedfoward.txt file:
 fitness_criterion: is a parameter that allows us to specify the method for determining the "best" birds within the 
 population. This criterion can be set to either min, max, or mean. When set to max, for example, the algorithm 
 selects birds with the highest fitness scores as the best performers. These birds are prioritized for breeding in 
