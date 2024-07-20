@@ -1,3 +1,5 @@
+AI Flappy Bird
+
 Project overview:
 
 This project implements a Flappy Bird game enhanced with an AI that learns to play the game efficiently. The AI uses the 
