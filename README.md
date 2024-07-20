@@ -1,6 +1,10 @@
-This is flappy bird game encoded with an AI, that uses this AI to learn how to play the game well!!!
+Project overview:
+
+This project implements a Flappy Bird game enhanced with an AI that learns to play the game efficiently. The AI uses the 
+NEAT (NeuroEvolution of Augmenting Topologies) algorithm to evolve and improve its performance over successive generations.
 
 Extra information about the config_feedfoward.txt file:
+
 fitness_criterion: is a parameter that allows us to specify the method for determining the "best" birds within the 
 population. This criterion can be set to either min, max, or mean. When set to max, for example, the algorithm 
 selects birds with the highest fitness scores as the best performers. These birds are prioritized for breeding in 
@@ -64,3 +68,7 @@ are typically subject to removal or reinitialization in order to foster diversit
 solutions through evolution. This mechanism helps NEAT algorithms maintain evolutionary progress by preventing the
 persistence of ineffective or suboptimal genetic lineages, encouraging the exploration of new genetic combinations and 
 network architectures that may lead to improved performance on the given task.
+
+This explanation aims to give you a better understanding of the config_feedforward.txt file and the overall project.
+
+Thank you for taking the time to check out this project! Your interest and support mean the world to me.
