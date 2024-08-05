@@ -49,4 +49,4 @@ NEAT Article: https://nn.cs.utexas.edu/downloads/papers/stanley.cec02.pdf
 
 This setup encourages exploration and prevents stagnation by promoting diversity in genetic traits and network structures.
 
-Thank you for taking the time to check out this project! Your interest and support mean the world to me.
+Thank you for taking the time to check out this project!
